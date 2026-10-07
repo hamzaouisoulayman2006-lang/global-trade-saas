@@ -61,6 +61,10 @@ app.delete('/api/products/:id', async (req, res) => {
 });
 // 4. Start Server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`🚀 Backend server running on http://localhost:${PORT}`);
-});
+// Start the server locally, but export it for Vercel
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
+
+module.exports = app;
