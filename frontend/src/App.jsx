@@ -14,7 +14,7 @@ function App() {
   const loadInventory = async () => {
     setIsLoading(true); // Start loading
     try {
-      const response = await fetch('http://localhost:5000/api/products');
+      const response = await fetch('https://global-trade-saas-anxl8saxr-soul-e42c.vercel.app/');
       const data = await response.json();
       setInventory(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -34,7 +34,7 @@ function App() {
     if (!newName || !newPrice) return alert('Please enter both a name and a price.');
 
     try {
-      const response = await fetch('http://localhost:5000/api/products', {
+      const response = await fetch('https://global-trade-saas-anxl8saxr-soul-e42c.vercel.app/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newName, priceCNY: Number(newPrice), imageUrl: newImage })
@@ -50,7 +50,7 @@ function App() {
 
   const deleteProduct = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/products/${id}`, { method: 'DELETE' });
+      const response = await fetch(`https://global-trade-saas-anxl8saxr-soul-e42c.vercel.app//${id}`, { method: 'DELETE' });
       if (response.ok) loadInventory();
     } catch (err) {
       console.error('Error deleting product:', err);
