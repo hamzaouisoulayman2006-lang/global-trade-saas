@@ -1,27 +1,32 @@
-require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+require('dotenv').config();
+
+// Import your database model
 const Product = require('./productModel');
 
 const app = express();
 
-// 🚨 CRITICAL: These two lines allow your server to read the JSON sent from React
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// 1. Connect to Database
-mongoose.connect(process.env.MONGO_URI, {
-    serverSelectionTimeoutMS: 5000, // Fails fast if network blocks it
-})
-.then(() => console.log('✅ Connected to MongoDB Atlas successfully!'))
-.catch((err) => console.error('❌ Database connection error:', err.message));
+// Database Connection with detailed error logging
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('✅ Connected to MongoDB Atlas successfully!'))
+    .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
-// 2. GET Route (Fetch products)
+// 1. Home Route (Fixes the "Cannot GET /" screen)
+app.get('/', (req, res) => {
+    res.send('GlobalTrade SaaS Backend is Live!');
+});
+
+// 2. GET Route (Fetch all products)
 app.get('/api/products', async (req, res) => {
     try {
         const products = await Product.find();
-        res.json(products);
+        res.status(200).json(products);
     } catch (err) {
         console.error('GET Error:', err.message);
         res.status(500).json({ error: 'Failed to fetch products' });
@@ -29,18 +34,15 @@ app.get('/api/products', async (req, res) => {
 });
 
 // 3. POST Route (Add a product)
-// 3. POST Route (Add a product)
 app.post('/api/products', async (req, res) => {
     try {
-        // Grab the name, price, AND imageUrl from the React request
-        const { name, priceCNY, imageUrl } = req.body; 
+        const { name, priceCNY, imageUrl } = req.body;
         
         if (!name || !priceCNY) {
             return res.status(400).json({ error: 'Name and price are required' });
         }
 
-        // Save all three to the database
-        const newProduct = new Product({ name, priceCNY, imageUrl }); 
+        const newProduct = new Product({ name, priceCNY, imageUrl });
         const savedProduct = await newProduct.save();
         
         res.status(201).json(savedProduct);
@@ -49,6 +51,7 @@ app.post('/api/products', async (req, res) => {
         res.status(500).json({ error: 'Failed to save product' });
     }
 });
+
 // 4. DELETE Route (Remove a product)
 app.delete('/api/products/:id', async (req, res) => {
     try {
@@ -59,9 +62,8 @@ app.delete('/api/products/:id', async (req, res) => {
         res.status(500).json({ error: 'Failed to delete product' });
     }
 });
-// 4. Start Server
-const PORT = process.env.PORT || 5000;
-// Start the server locally, but export it for Vercel
+
+// Vercel Serverless Export Configuration
 if (process.env.NODE_ENV !== 'production') {
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
